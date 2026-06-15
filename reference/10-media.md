@@ -4,7 +4,7 @@
 
 the production system supports embedded media in documents: images, videos, audio files, and PDFs. Media files are stored in a dedicated object store bucket, content-addressed by SHA-256 hash, with reference tracking in the database to support cross-document sharing and garbage collection.
 
-Source: `src/media.rs`, `src/media_observer.rs`, `src/persistence/s3.rs` (object storeMediaStore), `src/persistence/dynamo.rs` (DynamoMediaRefStore)
+Source: `src/media.rs`, `src/media_observer.rs`, `src/persistence/object_store.rs` (ObjectStoreMediaStore), `src/persistence/database.rs` (DatabaseMediaRefStore)
 
 ## How It Works
 
@@ -100,8 +100,8 @@ the database (app-media-refs table)
 
 ### Why a Separate Media Bucket?
 
-- **Security boundary**: Media may contain sensitive content (screenshots with PII). Separating it from document snapshots allows different IAM policies.
-- **Lifecycle management**: Media can have different retention/Glacier policies than CRDT snapshots.
+- **Security boundary**: Media may contain sensitive content (screenshots with PII). Separating it from document snapshots allows different access policies.
+- **Lifecycle management**: Media can have different retention/cold storage policies than CRDT snapshots.
 - **Cost monitoring**: Easy to track media storage costs separately.
 
 ### Why Reference Tracking (Not Just Inline)?

@@ -28,7 +28,7 @@ The server first installs the TLS provider and structured logging, then loads cl
 
 ### Phase 2: Storage Clients
 
-the database and object store clients are created with optional endpoint overrides (`APP_DB_ENDPOINT`, `APP_STORAGE_ENDPOINT`) for local development against a local database emulator and MinIO/LocalStack.
+Database and object store clients are created with optional endpoint overrides (`APP_DB_ENDPOINT`, `APP_STORAGE_ENDPOINT`) for local development against local emulators.
 
 ### Phase 3: Store Initialization
 

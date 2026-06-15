@@ -4,7 +4,7 @@
 
 The persistence layer is responsible for durably storing document content, metadata, and all associated resources (comments, versions, folders, etc.). It is split across two cloud services — object storage for large binary blobs and the database for structured metadata — connected by a background snapshot scheduler that periodically checkpoints in-memory state.
 
-Source: `src/persistence/mod.rs`, `src/persistence/s3.rs`, `src/persistence/dynamo.rs`, `src/persistence/snapshot_scheduler.rs`
+Source: `src/persistence/mod.rs`, `src/persistence/object_store.rs`, `src/persistence/database.rs`, `src/persistence/snapshot_scheduler.rs`
 
 ## How It Works
 
@@ -44,7 +44,7 @@ Every 30 seconds:
     if updates_since_flush >= 100 OR timer expired:
       1. Encode the CollabDoc to binary (encode_state)
       2. Write to the object store: {doc_id}/{seq}.bin
-      3. Update Database metadata: snapshot_s3_key, updated_at, title
+      3. Update Database metadata: snapshot_key, updated_at, title
       4. Optionally record a VersionEntry (based on editor count):
          - 1 editor:  version every 2 min
          - 2-3 editors: version every 1 min
@@ -68,7 +68,7 @@ DocManager::get_or_create("doc_abc")
   ├── Fast path: already in HashMap? Return Arc<CollabDoc>
   │
   └── Slow path (write lock):
-        1. Query the database for metadata → get snapshot_s3_key
+        1. Query the database for metadata → get snapshot_key
         2. Load binary blob from the object store at that key
         3. Create new yrs::Doc
         4. Apply the object store blob as a Yrs update (hydrate)
@@ -95,7 +95,7 @@ This prevents unbounded memory growth. A doc that was popular an hour ago but ha
 {
   "doc_id": "doc_abc",
   "seq": 42,
-  "s3_key": "doc_abc/42.bin",
+  "storage_key": "doc_abc/42.bin",
   "timestamp": 1718451200,
   "contributors": ["alice", "bob"],
   "title": "Design Review Notes"
@@ -115,7 +115,7 @@ trait SnapshotStore: Send + Sync {
     async fn load_latest(&self, doc_id: &str) -> Result<Option<(u64, Vec<u8>)>, PersistenceError>;
     async fn load_by_key(&self, key: &str) -> Result<Option<Vec<u8>>, PersistenceError>;
     async fn delete_all(&self, doc_id: &str) -> Result<(), PersistenceError>;
-    async fn set_storage_class(&self, doc_id: &str, glacier: bool) -> Result<(), PersistenceError>;
+    async fn set_storage_class(&self, doc_id: &str, cold_storage: bool) -> Result<(), PersistenceError>;
 }
 ```
 
@@ -130,7 +130,7 @@ Benefits:
 
 - **Size**: A Yrs document state can be 1-10 MB (or more for large docs with history). the database items cap at 400 KB.
 - **Cost**: object store is ~$0.023/GB/month vs the database's ~$0.25/GB/month for on-demand.
-- **Lifecycle**: object store supports automatic Glacier tiering for deleted/archived docs.
+- **Lifecycle**: object store supports automatic cold-storage tiering for deleted/archived docs.
 
 ### Why the database for Metadata?
 

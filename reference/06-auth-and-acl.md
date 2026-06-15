@@ -34,9 +34,9 @@ Key headers:
 
 ### Origin Verification
 
-Problem: The load balancer security group allows all the CDN IPs (shared managed prefix list). An attacker could create their own the CDN's distribution, point it at our the load balancer, and forge `x-forwarded-user`.
+Problem: The load balancer security group allows all CDN IPs (shared managed prefix list). An attacker could create their own CDN distribution, point it at the load balancer, and forge `x-forwarded-user`.
 
-Solution: CDK injects a Secrets Manager secret as a custom origin header on our CDN's distribution. The backend validates this header on every request. An attacker's distribution can't know this secret.
+Solution: Infrastructure-as-code injects a secret as a custom origin header on the CDN distribution. The backend validates this header on every request. An attacker's distribution can't know this secret.
 
 Rollout modes:
 - `monitor` — Log mismatches but allow (safe rollout during edge propagation)
@@ -146,7 +146,7 @@ Request arrives (e.g., PATCH /api/docs/{id})
 - **Edge caching**: The CDN caches static assets (frontend JS/CSS) at the edge while routing API/WS to the origin.
 - **WAF**: The CDN integrates with a web application firewall for additional protection.
 
-### Why the group membership service Groups (Not IAM)?
+### Why the group membership service Groups (Not Role-Based)?
 
 - **Organizational alignment**: Teams in the organization already manage access via the group membership service groups (posix, LDAP, org directory teams). Users expect to share docs with "my team" using the same groups they use elsewhere.
 - **Dynamic membership**: When someone joins a team, they immediately get access to all that team's docs without manual grants.
