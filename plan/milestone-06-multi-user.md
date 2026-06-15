@@ -311,10 +311,10 @@ async fn ws_handler(
 
 The reference system's auth system (`src/auth.rs`, `src/acl.rs`) extends this pattern significantly:
 - **mTLS auth** instead of a simple header (production-grade auth)
-- **the group membership service group membership** for team-based access (not just individual users)
+- **Group membership service** for team-based access (not just individual users)
 - **Folder-level ACL inheritance** (a folder's ACL applies to all docs inside)
-- **Origin verification** to prevent the CDN impersonation attacks
-- **Redis-cached the group membership service calls** for performance
+- **Origin verification** to prevent CDN impersonation attacks
+- **Redis-cached group membership calls** for performance
 
 The presence system (`src/presence/redis.rs`) uses Redis instead of in-memory HashMap to work across multiple server nodes.
 

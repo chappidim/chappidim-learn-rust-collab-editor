@@ -2,7 +2,7 @@
 
 ## What It Is
 
-the production system runs multiple container orchestration tasks behind an the load balancer. Since any task can receive a WebSocket connection for any document, the system needs a mechanism to:
+The system runs multiple container instances behind a load balancer. Since any task can receive a WebSocket connection for any document, the system needs a mechanism to:
 
 1. Route all connections for a given doc to the same node (affinity)
 2. Propagate CRDT updates between nodes when affinity fails
@@ -15,7 +15,7 @@ Source: `src/routing/mod.rs`, `src/sync/mod.rs`, `src/sync/redis.rs`, `src/sync/
 ### Doc-Affinity Routing
 
 ```
-                     the load balancer (round-robin)
+                     Load Balancer (round-robin)
                            │
               ┌────────────┼────────────┐
               ▼            ▼            ▼
@@ -117,7 +117,7 @@ Separating channels prevents cursor noise from delaying CRDT delivery and allows
 
 ### Why Not Sticky Sessions?
 
-the load balancer sticky sessions (cookie-based) don't help because:
+Load balancer sticky sessions (cookie-based) don't help because:
 - Different users editing the same doc may be on different machines
 - WebSocket connections can outlive the load balancer's session cookie TTL
 - Failover on node death would still require state transfer
@@ -136,4 +136,4 @@ the load balancer sticky sessions (cookie-based) don't help because:
 
 ### Why Doc-Affinity At All?
 
-Without affinity, every CRDT update for a popular doc would need to be applied on N nodes simultaneously. With affinity, most operations stay local to one node, reducing Redis traffic by ~Nx. The few cases where a doc is co-loaded (the load balancer split, failover) are handled gracefully by the broadcast mechanism.
+Without affinity, every CRDT update for a popular doc would need to be applied on N nodes simultaneously. With affinity, most operations stay local to one node, reducing Redis traffic by ~Nx. The few cases where a doc is co-loaded (load balancer split, failover) are handled gracefully by the broadcast mechanism.

@@ -4,8 +4,8 @@
 
 A production system's auth system has two layers:
 
-1. **Authentication** — Who is this user? Handled by mTLS auth via the CDN an edge auth function.
-2. **Authorization (ACL)** — What can this user do on this resource? Handled by the group membership service group membership checks with folder-tree inheritance.
+1. **Authentication** — Who is this user? Handled by mTLS via a CDN edge function.
+2. **Authorization (ACL)** — What can this user do on this resource? Handled by group membership checks with folder-tree inheritance.
 
 Source: `src/auth.rs`, `src/acl.rs`, `src/acl_routes.rs`, `src/groups.rs`
 
@@ -14,11 +14,11 @@ Source: `src/auth.rs`, `src/acl.rs`, `src/acl_routes.rs`, `src/groups.rs`
 ### Production Flow
 
 ```
-Browser                the CDN              an edge auth function           the load balancer              the production system
+Browser                   CDN                Edge Auth Fn          Load Balancer         Backend
   │                       │                       │                   │                  │
   │── HTTPS request ────▶│                       │                   │                  │
   │                       │── Invoke ────────────▶│                   │                  │
-  │                       │                       │── mTLS auth ──▶│                  │
+  │                       │                       │── mTLS verify ──▶│                  │
   │                       │                       │  (verify client   │                  │
   │                       │                       │   certificate)    │                  │
   │                       │◀── x-forwarded-user ──│                   │                  │
@@ -29,8 +29,8 @@ Browser                the CDN              an edge auth function           the 
 ```
 
 Key headers:
-- `x-forwarded-user` — The authenticated user alias (stamped by an edge auth function after the mTLS gateway validation)
-- `x-origin-verify` — A shared secret proving the request came through OUR the CDN's distribution (prevents origin confusion attacks where an attacker's CDN distribution reaches the load balancer)
+- `x-forwarded-user` — The authenticated user alias (stamped by the edge auth function after mTLS validation)
+- `x-origin-verify` — A shared secret proving the request came through the legitimate CDN distribution (prevents origin confusion attacks where an attacker's CDN reaches the load balancer)
 
 ### Origin Verification
 
@@ -109,7 +109,7 @@ Resolution algorithm (`resolve_effective_acl`):
 
 ### the group membership service Client
 
-the group membership service is an internal group membership service. The `GroupClient` trait:
+The group membership service handles user-to-group resolution. The `GroupClient` trait:
 
 ```rust
 trait GroupClient: Send + Sync {
@@ -133,7 +133,7 @@ Request arrives (e.g., PATCH /api/docs/{id})
   ├── Load doc metadata from the database
   ├── Resolve effective ACL (walk inheritance chain)
   ├── Check: is user the owner? → Owner access
-  ├── Check: is user in any ACL entry? (the group membership service batch check)
+  ├── Check: is user in any ACL entry? (group membership batch check)
   ├── Check: does link_access grant sufficient level?
   └── Return highest matching permission level (or 403)
 ```
@@ -148,7 +148,7 @@ Request arrives (e.g., PATCH /api/docs/{id})
 
 ### Why the group membership service Groups (Not Role-Based)?
 
-- **Organizational alignment**: Teams in the organization already manage access via the group membership service groups (posix, LDAP, org directory teams). Users expect to share docs with "my team" using the same groups they use elsewhere.
+- **Organizational alignment**: Teams in the organization already manage access via group membership groups (posix, LDAP, org directory teams). Users expect to share docs with "my team" using the same groups they use elsewhere.
 - **Dynamic membership**: When someone joins a team, they immediately get access to all that team's docs without manual grants.
 
 ### Why Folder-Level Inheritance?
@@ -159,7 +159,7 @@ The `inherits_permissions` flag allows opting out: a confidential doc inside a s
 
 ### Why Redis Caching for the group membership service?
 
-the group membership service calls take 50-200ms and the same user's group membership rarely changes within minutes. A 5-minute Redis TTL means:
+group membership calls take 50-200ms and the same user's group membership rarely changes within minutes. A 5-minute Redis TTL means:
 - First ACL check for a user: ~100ms (the group membership service call)
 - Subsequent checks: <1ms (Redis lookup)
 - Group membership changes propagate within 5 minutes

@@ -139,7 +139,7 @@ the database is a key-value store — it can't do full-text search, fuzzy matchi
 
 **Index-time only**: Fast but potentially stale. A user who just lost access might still see results until the index catches up.
 
-**Query-time only**: Always correct but potentially slow (checking permissions for every search result is N the group membership service calls).
+**Query-time only**: Always correct but potentially slow (checking permissions for every search result is N group membership calls).
 
 **Both**: Index-time filtering removes 99% of unauthorized results cheaply (no the group membership service call), and the postfilter catches the remaining <1% staleness window. This gives both performance and correctness.
 

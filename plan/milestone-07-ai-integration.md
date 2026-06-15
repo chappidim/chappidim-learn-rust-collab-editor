@@ -368,17 +368,17 @@ The shadow accumulates all edits across multiple tool calls, and the user sees O
 1. **Streaming text**: Instead of waiting for the full response, stream `TextChunk` events to the client as they arrive (show the AI "thinking").
 2. **Rate limiting**: Add a counter per user — max 20 AI requests per minute.
 3. **Mock AI service**: Create a `MockAiService` that returns canned responses for testing without API keys.
-4. **Kill switch**: Add a config flag to disable AI globally (like The reference system's a remote config service Andon Cord).
+4. **Kill switch**: Add a config flag to disable AI globally (remote config polling with fail-safe defaults).
 5. **Tool result loop**: Implement the full converse loop: when the model returns `tool_use`, execute it, then call the API again with the tool result. Repeat until the model returns `end_turn`.
 
 ## How a Production System Does This
 
 The reference system's AI system (`src/ai/`) extends this with:
-- **the LLM streaming API** instead of direct Anthropic API (runs in cloud)
+- **A managed LLM streaming API** instead of direct Anthropic API (runs in cloud infrastructure)
 - **7 tools** including table operations, comments, and formatting
 - **Mark-based addressing** (text matches instead of character offsets for resilience to concurrent edits)
 - **AiTraceRing** for recording tool calls for diagnostics
-- **a remote config service kill switch** (fail-safe: AI disabled until config says otherwise)
+- **Remote config kill switch** (fail-safe: AI disabled until config says otherwise)
 - **Per-doc-type tool gating**: prose docs get `table` tool, spreadsheets get `sheet` tool
 - **Format ops accumulator**: Cell styling ships alongside the text diff
 

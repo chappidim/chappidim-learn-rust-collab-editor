@@ -10,7 +10,7 @@ Source: `src/crdt/mod.rs`
 
 ### The CollabDoc
 
-`CollabDoc` wraps a `yrs::Doc` and adds the production system-specific concerns:
+`CollabDoc` wraps a `yrs::Doc` and adds system-specific concerns:
 
 ```
 CollabDoc
@@ -73,7 +73,7 @@ CRDTs eliminate these problems:
 
 - **No central sequencer**: Any node can accept writes independently
 - **Convergence guaranteed**: All replicas that see the same set of updates converge to the same state, regardless of order
-- **Multi-node friendly**: the production system can run N container tasks, each accepting writes in parallel
+- **Multi-node friendly**: the system can run N container tasks, each accepting writes in parallel
 
 The tradeoff is that CRDTs use more memory (they carry tombstones for deleted content) and the merge semantics can sometimes surprise users (e.g., concurrent edits to the same word). Yrs mitigates this with garbage collection of old tombstones and well-tested merge algorithms.
 

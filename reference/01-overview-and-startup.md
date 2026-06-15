@@ -61,12 +61,12 @@ A single Redis URL (`APP_REDIS_URL`) backs multiple logical subsystems:
 - **PresenceTracker** — Cursor positions and typing indicators
 - **DocRouter** — Doc-to-node affinity mapping
 - **RateLimiter** — Per-user sliding window counters
-- **the group membership service cache** — Group membership lookups with Redis TTL
+- **Group membership cache** — Group membership lookups with Redis TTL
 - **CARDS cache** — Team name resolution with Redis TTL
 
 ### Phase 5: AI & Config
 
-- **AiService**: `the LLM providerAiService` (prod) or `MockAiService` (test-mock feature flag)
+- **AiService**: `LlmAiService` (prod) or `MockAiService` (test-mock feature flag)
 - **AiConfigStore**: Polls cloud a remote config service every 30s for the "Andon Cord" kill switch. Fail-safe: AI is disabled by default until a remote config service explicitly enables it.
 - **AiTraceRing**: In-memory ring buffer recording AI tool calls for diagnostics/feedback.
 

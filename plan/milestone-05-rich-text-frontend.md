@@ -176,13 +176,13 @@ Awareness updates are typically sent:
 
 ## How a Production System Does This
 
-The reference system's frontend (`CollabEditorUI`) uses:
+The reference system's frontend uses:
 - TipTap with `@tiptap/extension-collaboration` (same as here)
-- A **custom** `a custom WebSocket provider` (not y-websocket) that speaks the binary protocol from `src/ws/protocol.rs`
+- A **custom** WebSocket provider (not y-websocket) that speaks the binary protocol from `src/ws/protocol.rs`
 - Awareness flows over a separate Redis pub/sub channel (`doc:{id}:awareness`)
 - Additional message types: AI responses, comments, format ops, write-rejected toasts
 
-The backend awareness handling is in `src/ws/mod.rs` — it's a simple broadcast without touching the CRDT doc.
+The backend awareness handling is in `src/ws/mod.rs` — a simple broadcast without touching the CRDT doc.
 
 ## Rust Book Chapters to Read
 

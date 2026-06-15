@@ -105,7 +105,7 @@ A middleware layer (`enforce_mcp_version`) rejects MCP clients below a minimum p
 MCP is an emerging standard for AI tool access. By implementing it:
 - Any MCP-compatible AI agent can access the production system documents out of the box
 - The protocol handles JSON-RPC framing, tool discovery, and error conventions
-- Future agents don't need the production system-specific integration code
+- Future agents don't need system-specific integration code
 
 ### Why Sessions (Not Stateless)?
 
