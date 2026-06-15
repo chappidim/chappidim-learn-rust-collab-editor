@@ -28,9 +28,11 @@ A Rust HTTP server with:
 ### 1. Create the project
 
 ```bash
-cargo new collab-editor
-cd collab-editor
+# From the repo root (already has plan/ and reference/)
+cargo init
 ```
+
+This creates `Cargo.toml` and `src/main.rs` alongside your existing folders.
 
 ### 2. Add dependencies to `Cargo.toml`
 
